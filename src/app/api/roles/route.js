@@ -1,66 +1,48 @@
-// 'use server'
-
+import ConnectToMongoDb from "@/connect";
 import Role from "@/models/Role";
-import { v4 as uuidv4 } from "uuid";
 
-
-// export default  function handler(req, res) {
-//   switch (req.method) {
-//     case "GET":
-//       return handleGet(req, res);
-//     case "POST":
-//       return handlePost(req, res);
-//     case "PUT":
-//       return handlePut(req, res);
-//     default:
-//       res.setHeader("Allow", ["GET", "POST", "PUT"]);
-//       return res.status(405).end(`Method ${req.method} Not Allowed`);
-//   }
-// }
-
-export const GET = async(req, res)=> {
-  let Role = await Role.find({});
-  return res.status(200).json(Role);
-}
-
-export const POST =async (req, res)=> {
-  const { name } = req.body;
-
-  if (!name || !permissions) {
-    return res.status(400).json({ error: "Name and permissions are required" });
+ConnectToMongoDb();
+export async function GET(request) {
+  let reqBody = request.json();
+  const { role, permissions } = reqBody;
+  if (role) {
+    let roleFound = await Role.findOne({ name: role });
+    if (!roleFound) {
+      return Response.status(404).json({ message: "Role not found" });
+    }
+    return Response.json({ role: roleFound });
   }
-
-  const newRole = {
-    name,
-    permissions,
-  };
-
-  let Role = new Role.create(newRole);
-
-  return res.status(201).json(Role);
+  let roles = await Role.find({});
+  return Response.json({ roles });
 }
+export async function POST(request) {
+  let reqBody = request.json();
+  const { role, permissions } = reqBody;
 
-// export const PUT = async (req, res) => {
-//   const { id, name, permissions } = req.body;
+  let newRole = await new Role({ role, permissions });
+  await newRole.save();
 
-//   if (!id || !name || !permissions) {
-//     return res
-//       .status(400)
-//       .json({ error: "ID, name, and permissions are required" });
-//   }
+  return Response.json({ roles: newRole });
+}
+export async function PUT(request) {
+  let reqBody = request.json();
+  const { role, permissions } = reqBody;
 
-//   const roleIndex = roles.findIndex((role) => role.id === id);
+  let newRole = await Role.findOneAndUpdate(
+    { role },
+    {
+      role,
+      permissions,
+    }
+  );
 
-//   if (roleIndex === -1) {
-//     return res.status(404).json({ error: "Role not found" });
-//   }
+  return Response.json({ roles: newRole });
+}
+export async function DELETE(request) {
+  let reqBody = request.json();
+  const { role } = reqBody;
 
-//   roles[roleIndex] = {
-//     ...roles[roleIndex],
-//     name,
-//     permissions,
-//     updatedAt: new Date(),
-//   };
+  await Role.deleteOne({ name: role });
 
-//   return res.status(200).json(roles[roleIndex]);
-// }
+  return Response.json({ msg: "Role is deleted succefully" });
+}
