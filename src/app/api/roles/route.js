@@ -6,13 +6,13 @@ ConnectToMongoDb();
 
 export async function GET(request) {
   try {
-    let roles = await Role.find({}).populate('permissions');
+    let roles = await Role.find({}).populate("permissions");
     return new Response(JSON.stringify({ roles }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to fetch roles' }), {
+    return new Response(JSON.stringify({ error: "Failed to fetch roles" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
@@ -32,7 +32,7 @@ export async function POST(request) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to create role' }), {
+    return new Response(JSON.stringify({ error: "Failed to create role" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
@@ -48,14 +48,14 @@ export async function PUT(request) {
       id,
       { name, permissions: permissionIds },
       { new: true } // Return the updated document
-    ).populate('permissions');
+    ).populate("permissions");
 
     return new Response(JSON.stringify({ role }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to update role' }), {
+    return new Response(JSON.stringify({ error: "Failed to update role" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
@@ -74,7 +74,7 @@ export async function DELETE(request) {
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to delete role' }), {
+    return new Response(JSON.stringify({ error: "Failed to delete role" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
