@@ -1,5 +1,5 @@
 
-import dbConnect from "@/app/connect/connect";
+import dbConnect from "@/app/connect";
 import User from "@/models/User";
 
 dbConnect();

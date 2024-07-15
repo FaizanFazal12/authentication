@@ -1,48 +1,82 @@
 import ConnectToMongoDb from "@/connect";
 import Role from "@/models/Role";
+import Permission from "@/models/Permission";
 
 ConnectToMongoDb();
+
 export async function GET(request) {
-  let reqBody = request.json();
-  const { role, permissions } = reqBody;
-  if (role) {
-    let roleFound = await Role.findOne({ name: role });
-    if (!roleFound) {
-      return Response.status(404).json({ message: "Role not found" });
-    }
-    return Response.json({ role: roleFound });
+  try {
+    let roles = await Role.find({}).populate('permissions');
+    return new Response(JSON.stringify({ roles }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: 'Failed to fetch roles' }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
   }
-  let roles = await Role.find({});
-  return Response.json({ roles });
 }
+
 export async function POST(request) {
-  let reqBody = request.json();
-  const { role, permissions } = reqBody;
+  try {
+    let reqBody = await request.json();
+    const { name, permissionIds } = reqBody;
 
-  let newRole = await new Role({ role, permissions });
-  await newRole.save();
+    let role = new Role({ name, permissions: permissionIds });
+    await role.save();
 
-  return Response.json({ roles: newRole });
+    return new Response(JSON.stringify({ role }), {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: 'Failed to create role' }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }
+
 export async function PUT(request) {
-  let reqBody = request.json();
-  const { role, permissions } = reqBody;
+  try {
+    let reqBody = await request.json();
+    const { id, name, permissionIds } = reqBody;
 
-  let newRole = await Role.findOneAndUpdate(
-    { role },
-    {
-      role,
-      permissions,
-    }
-  );
+    let role = await Role.findByIdAndUpdate(
+      id,
+      { name, permissions: permissionIds },
+      { new: true } // Return the updated document
+    ).populate('permissions');
 
-  return Response.json({ roles: newRole });
+    return new Response(JSON.stringify({ role }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: 'Failed to update role' }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }
+
 export async function DELETE(request) {
-  let reqBody = request.json();
-  const { role } = reqBody;
+  try {
+    let reqBody = await request.json();
+    const { id } = reqBody;
 
-  await Role.deleteOne({ name: role });
+    await Role.findByIdAndDelete(id);
 
-  return Response.json({ msg: "Role is deleted succefully" });
+    return new Response(JSON.stringify({ msg: "Role deleted successfully" }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  } catch (error) {
+    return new Response(JSON.stringify({ error: 'Failed to delete role' }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
 }
